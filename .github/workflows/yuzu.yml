@@ -45,7 +45,7 @@ jobs:
         shell: bash
         run: |
           mkdir patches && pip3 install requests urllib3
-          python fix/scripts/merge/apply-patches-by-label.py "early-access-merge" "do-not-merge" "EA"
+          python fix/scripts/merge/apply-patches-by-label.py "early-access-merge" "" "EA"
           git am --3way --whitespace=fix --reject fix/*.patch || git am --skip || true
       - name: Install dependencies
         # due to how chocolatey works, only cmd.exe is supported here
