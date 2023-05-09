@@ -1,7 +1,15 @@
-name: 'yuzu'
-run-name: 'Build yuzu'
+name: 'Build Yuzu-EA'
 
 on:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - '**.patch'
+  schedule:
+    # run every 12 hours
+    - cron: '20 */12 * * *'
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
@@ -22,6 +30,10 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: '3.9'
+      - name: Set version
+        shell: bash
+        run: |
+          echo YUZU_VER=EA-`date +'%Y%m%d'`.${{ github.run_number }}.`git rev-parse --short=7 HEAD` >> $GITHUB_ENV
       - name: Configure git
         run: |
           git config --global user.email "yuzu@yuzu-emu.org"
@@ -30,7 +42,7 @@ jobs:
         shell: bash
         run: |
           mkdir patches && pip3 install requests urllib3
-          python .ci/scripts/merge/apply-patches-by-label.py "early-access-merge" "early-access-merge"
+          python fix/scripts/apply-patches-by-label.py "early-access-merge" "do-not-merge" "EA"
           git am --3way --whitespace=fix --reject fix/*.patch || git am --skip || true
       - name: Install dependencies
         # due to how chocolatey works, only cmd.exe is supported here
@@ -56,17 +68,11 @@ jobs:
       - name: Pack
         shell: pwsh
         run: .\.ci\scripts\windows\upload.ps1
-      - name: Upload
-        uses: actions/upload-artifact@v3
+      - name: Release
+        uses: softprops/action-gh-release@v1
         with:
-          name: windows
-          path: artifacts/
-      - name: Rename exe
-        shell: pwsh
-        run: |
-          Rename-Item -Path ${{ env.INDIVIDUAL_EXE }} -NewName yuzu.exe
-      - name: Upload EXE
-        uses: actions/upload-artifact@v3
-        with:
-          name: windows(only exe)
-          path: yuzu.exe
+          tag_name: ${{ env.YUZU_VER }}
+          name: yuzu-${{ env.YUZU_VER }}
+          prerelease: false
+          files: |
+            artifacts/*
