@@ -4,9 +4,10 @@
 # Download all pull requests as patches that match a specific label
 # Usage: python apply-patches-by-label.py <label-to-match> <label-to-exclude> <tagline>
 
-import json, requests, subprocess, sys, traceback
+import json, requests, subprocess, sys, traceback, os
 
 tagline = sys.argv[3]
+token = os.getenv('GITHUB_TOKEN')
 
 def check_individual(labels):
     found = False
@@ -19,7 +20,8 @@ def check_individual(labels):
 
 def do_page(page):
     url = f"https://api.github.com/repos/yuzu-emu/yuzu/pulls?page={page}"
-    response = requests.get(url)
+    headers = {'authorization': 'Bearer %s' % token} if token is not None else None
+    response = requests.get(url, headers=headers)
     response.raise_for_status()
     if (response.ok):
         j = json.loads(response.content)

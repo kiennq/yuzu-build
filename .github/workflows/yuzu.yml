@@ -43,6 +43,8 @@ jobs:
           git config --global user.name "yuzubot"
       - name: Merge
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir patches && pip3 install requests urllib3
           python fix/scripts/merge/apply-patches-by-label.py "early-access-merge" "" "EA"
