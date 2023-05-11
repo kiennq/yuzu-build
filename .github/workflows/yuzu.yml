@@ -8,7 +8,7 @@ on:
       - '**.patch'
   schedule:
     # run every day
-    - cron: '20 */24 * * *'
+    - cron: '0 0 * * *'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -79,5 +79,6 @@ jobs:
           tag_name: ${{ env.YUZU_VER }}
           name: yuzu-${{ env.YUZU_VER }}
           prerelease: false
+          body_path: ${{ github.workspace }}-CHANGELOG.txt
           files: |
             artifacts/*
