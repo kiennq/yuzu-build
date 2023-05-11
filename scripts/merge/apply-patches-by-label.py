@@ -2,22 +2,24 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 # Download all pull requests as patches that match a specific label
-# Usage: python apply-patches-by-label.py <label-to-match> <label-to-exclude> <tagline>
+# Usage: python apply-patches-by-label.py <labels-to-match...> <tagline>
 
 import json, requests, subprocess, sys, traceback, os
 
-tagline = sys.argv[3]
+if len(sys.argv) < 2:
+    print("Not enough parameter", file=sys.stderr)
+    sys.exit(-1)
+
+tagline = sys.argv[-1]
+labels_to_match = sys.argv[:-1]
 token = os.getenv('GITHUB_TOKEN')
 merged_prs = []
 
 def check_individual(labels):
-    found = False
     for label in labels:
-        if (label["name"] == sys.argv[1]):
-            found = True
-        elif (label["name"] == sys.argv[2]):
-            return False
-    return found
+        if (label["name"] in labels_to_match):
+            return True
+    return False
 
 def do_page(page):
     url = f"https://api.github.com/repos/yuzu-emu/yuzu/pulls?page={page}"
